@@ -187,11 +187,6 @@ void setup()
   /*******************************************************************
   *                        VALUE AT STARTUP                          *
   *******************************************************************/
-  preset = andreaerocklectricguitar; // Value at startup
-  countpreset = (uint8_t)preset;
-  
-  // Apply preset 
-  switchPreset();
 
   // Initial bypass status read from FOOTSW
   if(digitalRead(FOOTSW) == LOW)
@@ -246,16 +241,7 @@ void loop()
         func_counter = 10; 
         break;
       case 'z':
-        countpreset++;
-        if(countpreset == N_PRESET)
-          countpreset = N_PRESET-1;
-        preset = (preset_t)countpreset;
-        break;
       case 'x':
-        countpreset--;
-        if(countpreset < 0)
-          countpreset = 0;
-        preset = (preset_t)countpreset;
         break;
       case '+':
         tmpencoderpulses = getPulses();
@@ -277,11 +263,11 @@ void loop()
   sum1 = ((((64)-1) * sum1)+((uint32_t)adcvalue1*(64)))/(64);
   out1 = sum1/64;
   pot1 = out1;
+  pot1 = 4096.0f-pot1;
   if(!isinrange(pot1, oldpot1, POT_THR))
-  {
-    func_counter = (uint8_t)selectorwithpot(pot1, 4);
-    if(func_counter>10)
-      func_counter = 10;
+  {    
+    countpreset = (uint8_t)selectorwithpot(pot1, 2);
+    preset = (preset_t)countpreset;
     
     oldpot1 = pot1;
   }
@@ -290,6 +276,7 @@ void loop()
   sum2 = ((((64)-1) * sum2)+((uint32_t)adcvalue2*(64)))/(64);
   out2 = sum2/64;
   pot2 = out2;
+  pot2 = 4096.0f-pot2;
   if(!isinrange(pot2, oldpot2, POT_THR))
   {
     func_counter=8;
@@ -974,9 +961,9 @@ void switchPreset(void)
     
     param8_value = selectorwithencoder(param8_pulses, 1); // Bright Pre Post
     
-    setPulses(param9_pulses);
-    set_regulation_precision2(PRECISION_9);
-    param9_value = processencoder2(MASTER_VOLUME_MIN, MASTER_VOLUME_MAX); // Master Volume
+    //setPulses(param9_pulses);
+    //set_regulation_precision2(PRECISION_9);
+    //param9_value = processencoder2(MASTER_VOLUME_MIN, MASTER_VOLUME_MAX); // Master Volume
     
     setPulses(param10_pulses);
     set_regulation_precision2(PRECISION_10);
@@ -1014,8 +1001,8 @@ void switchPreset(void)
     delayMicroseconds(100);
     
     // Master Volume
-    MasterVolumeMono(DEVICE_ADDR_7bit, MasterVolumeAddr, pow(10, param9_value/20.0)); // Set Master Volume 
-    delayMicroseconds(100); 
+    //MasterVolumeMono(DEVICE_ADDR_7bit, MasterVolumeAddr, pow(10, param9_value/20.0)); // Set Master Volume 
+    //delayMicroseconds(100); 
     
     setPulses(param1_pulses);
     func_counter = 0;
